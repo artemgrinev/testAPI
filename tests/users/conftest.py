@@ -11,6 +11,6 @@ def user_list():
 
 
 @pytest.fixture
-def user_info():
+def create_user():
     response = requests.get(CREATE_USER_URL, headers=API_KEY)
     return response

@@ -10,6 +10,14 @@ class UserPreview(BaseModel):
     picture: str
 
 
+class Locations(BaseModel):
+    street: str    #(length: 5 - 100)
+    city: str   #(length: 2 - 30)
+    state: str  #(length: 2 - 30)
+    country: str    #(length: 2 - 30)
+    timezone: str   #(Validtimezone value ex. + 7: 00, -1: 00)
+
+
 class UserFull(BaseModel):
     id: str
     title: Title
@@ -21,4 +29,6 @@ class UserFull(BaseModel):
     registerDate: str
     phone: str  #(phone number - anyformat)
     picture: str    #(url)
-    location: object    #(Location)
+    location: Locations    #(Location)
+
+
