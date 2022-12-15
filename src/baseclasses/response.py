@@ -15,6 +15,10 @@ class Response:
                 for item in self.response_json:
                     parsed_object = schema.parse_obj(item)
                     self.parsed_object = parsed_object
+            elif isinstance(self.response_json, dict):
+                for item in self.response_json["data"]:
+                    parsed_object = schema.parse_obj(item)
+                    self.parsed_object = parsed_object
             else:
                 schema.parse_obj(self.response_json)
         except ValidationError:
@@ -22,12 +26,15 @@ class Response:
                 "Could not map received object to pydantic schema"
             )
 
-    def assert_status_code(self, status_code):
+    def assert_status_code(self, status_code: int):
         if isinstance(status_code, list):
-            assert self.response_json in status_code, self
+            assert self.response_status in status_code, self
         else:
-            assert self.response_json == status_code, self
+            assert self.response_status == status_code, self
         return self
+
+    def get_parsed_object(self):
+        return self.parsed_object
 
     def __str__(self):
         return \
