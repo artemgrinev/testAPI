@@ -22,8 +22,8 @@ class TestValidUser:
     def test_users_list_pagination(self, get):
         page = 1
         limit = 50
-        pagination_endpoint = f'?page={page}&limit={limit}'
-        res = Response(get(USER_URL+pagination_endpoint))
+        url = f'{USER_URL}?page={page}&limit={limit}'
+        res = Response(get(url))
         assert res.assert_status_code(200).validate(UserPreview).response_json['limit'] == limit
 
     def test_creating_new_user(self, post, generate_user_data, writing_data):
