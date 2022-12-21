@@ -1,16 +1,26 @@
 import pytest
 import requests
 
-from configuration import USERS_LIST_URL, API_KEY, CREATE_USER_URL
+from configuration import API_KEY
+from src.generators.users import create_user_info
 
 
 @pytest.fixture
-def user_list():
-    response = requests.get(USERS_LIST_URL, headers=API_KEY)
-    return response
+def generate_user():
+    user = next(create_user_info())
+    data = {
+        'firstName': user.firstName,
+        'lastName': user.lastName,
+        'email': user.email
+    }
+    return data
 
 
-@pytest.fixture
-def create_user():
-    response = requests.get(CREATE_USER_URL, headers=API_KEY)
-    return response
+def _get_user_id(user_id=""):
+    return user_id
+
+
+@pytest.fixture(scope="session")
+def get_user_id():
+    user_id = _get_user_id
+    return user_id
