@@ -38,6 +38,16 @@ def put():
     return _put
 
 
+def _delete(url):
+    response = requests.delete(url, headers=API_KEY)
+    return response
+
+
+@pytest.fixture
+def delete():
+    return _delete
+
+
 def _writing_data(data: str):
     with open('data.txt', 'w') as outfile:
         json.dump(data, outfile)
@@ -53,3 +63,5 @@ def riding_data():
     with open('data.txt') as json_file:
         data = json.load(json_file)
     return data
+
+

@@ -1,7 +1,7 @@
 from randomuser import RandomUser
 from random import randint
 
-from src.data.user_data import UserPreview, UserFull, Location
+from src.data.user_data import UserFull
 
 random_user = RandomUser({'nat': 'ua'})
 
@@ -18,23 +18,12 @@ def create_user_info():
         dateOfBirth=random_user.get_dob(),                  # (ISO Date - value: 1 / 1 / 1900 - now)
         phone=random_user.get_phone(strip_hyphens=True),    # (phone number - any format)
         picture=random_user.get_picture(),                  # (url)
-        location={
-            'street': random_user.get_street(),             # (length: 5 - 100)
-            'city': random_user.get_city(),                 # (length: 2 - 30)
-            'state': random_user.get_state(),               # (length: 2 - 30)
-            'country': random_user.get_country(),           # length: 2 - 30)
-            'timezone': "+7:00",                            # Valid timezone (value ex. + 7: 00, -1: 00)
-        }
+        street=random_user.get_street(),                    # (length: 5 - 100)
+        city=random_user.get_city(),                        # (length: 2 - 30)
+        state=random_user.get_state(),                      # (length: 2 - 30)
+        country=random_user.get_country(),                  # length: 2 - 30)
+        timezone="+7:00",                                   # (Valid timezone value ex. + 7: 00, -1: 00)
     )
 
-
-def create_location():
-    yield Location(
-        street=random_user.get_street(),      # (length: 5 - 100)
-        city=random_user.get_city(),          # (length: 2 - 30)
-        state=random_user.get_state(),        # (length: 2 - 30)
-        country=random_user.get_country(),    # length: 2 - 30)
-        timezone="+7:00",                     # Valid timezone (value ex. + 7: 00, -1: 00)
-    )
 
 
