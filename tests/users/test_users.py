@@ -65,3 +65,5 @@ class TestValidUser:
         res = Response(get(url))
         res.assert_status_code(404)
         assert res.response_json == {'error': 'RESOURCE_NOT_FOUND'}
+
+

@@ -2,14 +2,6 @@ from dataclasses import dataclass
 
 
 @dataclass
-class UserPreview:
-    title: str = None       # ("mr", "ms", "mrs", "miss", "dr", "")
-    firstName: str = None   # (length: 2 - 50)
-    lastName: str = None    # (length: 2 - 50)
-    picture: str = None     # url
-
-
-@dataclass
 class UserFull:
     title: str = None           # ("mr", "ms", "mrs", "miss", "dr", "")
     firstName: str = None       # (length: 2 - 50)

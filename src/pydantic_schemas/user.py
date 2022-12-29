@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from src.enum.users_enum import Title
+from src.pydantic_schemas.location import Locations
 
 
 class User(BaseModel):
@@ -12,6 +13,7 @@ class User(BaseModel):
 
 
 class UserPreview(BaseModel):
+    """User as a part of list or other data like post/comment"""
     id: str
     title: Title    # ("mr", "ms", "mrs", "miss", "dr", "")
     firstName: str  # (length: 2 - 50)
@@ -19,15 +21,8 @@ class UserPreview(BaseModel):
     picture: str
 
 
-class Locations(BaseModel):
-    street: str     # (length: 5 - 100)
-    city: str       # (length: 2 - 30)
-    state: str      # (length: 2 - 30)
-    country: str    # (length: 2 - 30)
-    timezone: str   # (Valid timezone value ex. + 7: 00, -1: 00)
-
-
 class UserFull(BaseModel):
+    """Full user data returned by id"""
     id: str
     title: Title
     firstName: str          # (length: 2 - 50)

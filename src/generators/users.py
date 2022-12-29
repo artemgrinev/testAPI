@@ -1,6 +1,7 @@
 from randomuser import RandomUser
 from random import randint
 
+from src.baseclasses.builder import BuilderBaseClass
 from src.data.user_data import UserFull
 
 random_user = RandomUser({'nat': 'ua'})
@@ -26,4 +27,71 @@ def create_user_info():
     )
 
 
+class User(BuilderBaseClass):
 
+    def __init__(self):
+        super().__init__()
+        self.reset()
+
+    def set_tittle(self, tittle='mr'):
+        self.result['title'] = tittle
+        return self
+
+    def set_first_name(self, first_name='Freddy'):
+        self.result['firstName'] = first_name
+        return self
+
+    def set_last_name(self, last_name='Tester'):
+        self.result['lastName'] = last_name
+        return self
+
+    def set_gender(self, gender='male'):
+        self.result['gender'] = gender
+        return self
+
+    def set_status(self, status='activ'):
+        self.result['account_status'] = status
+        return self
+
+    def set_email(self, email='freddy.tester@mail.com'):
+        self.result['email'] = email
+        return self
+
+    def set_date_of_birth(self, date_of_birth='1/09/1968'):
+        self.result['dateOfBirth'] = date_of_birth
+        return self
+
+    def set_phone(self, phone='+99-354-85-98'):
+        self.result['phone'] = phone
+        return self
+
+    def set_avatar(self, avatar=random_user.get_picture()):
+        self.result['picture'] = avatar
+        return self
+
+    def set_location(self,
+                     street='Genesee Ave.',
+                     city='Los Angeles',
+                     state='CA',
+                     country='USA',
+                     timezone='-7'):
+        self.result['location'] = {
+            'street': street,
+            'city': city,
+            'state': state,
+            'country': country,
+            'timezone': timezone
+        }
+        return self
+
+    def reset(self):
+        self.set_tittle()
+        self.set_first_name()
+        self.set_last_name()
+        self.set_gender()
+        self.set_email()
+        self.set_date_of_birth()
+        self.set_phone()
+        self.set_avatar()
+        self.set_location()
+        return self
