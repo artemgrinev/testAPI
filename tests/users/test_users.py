@@ -1,21 +1,21 @@
 from src.baseclasses.response import Response
+from src.pydantic_schemas.posts import SchemaPostPreview
 from src.pydantic_schemas.user import SchemaUserPreview, SchemaUser, SchemaUserFull
-from configuration import USER_URL, CREATE_USER_URL
+from configuration import USER_URL, CREATE_USER_URL, POST_URL
 from src.generators.users import User, UserFull
 import allure
-import datetime
 
 
 @allure.title("Positive Way Users")
 class TestPositiveWayUsers:
     """
-    API EXAMPLE TEST
     PW-01: Getting users list
     PW-02: Pagination check
     PW-03: Creating new user
     PW-04: Find created user
     PW-05: Update created user
     PW-06: Change user information
+    PW-07: Change user information
     """
 
     @allure.step("PW-01: Getting users list")
@@ -52,7 +52,7 @@ class TestPositiveWayUsers:
         assert res.response_json != riding_data
         writing_data(res.response_json)
 
-    @allure.step("PW-06: Change user information")
+    @allure.step("PW-06: Full update created user")
     def test_full_update_user(self, put, riding_data, writing_data):
         full_user_date = UserFull().result
         url = f"{USER_URL}{riding_data['id']}"
@@ -60,6 +60,7 @@ class TestPositiveWayUsers:
         writing_data(res.response_json)
         res.assert_status_code(200).validate(SchemaUserFull)
 
+    @allure.step("PW-07: Change user information")
     def test_getting_full_user_data(self, get, riding_data):
         url = f"{USER_URL}{riding_data['id']}"
         Response(get(url)).assert_status_code(200)
@@ -73,6 +74,19 @@ class TestPositiveWayUsers:
         assert riding_data["phone"] == UserFull().result.get("phone")
         assert riding_data["location"] == UserFull().result.get("location")
 
+
+@allure.title("Positive Way Posts")
+class TestPositiveWayPosts:
+    """
+    PW-08: Getting post list
+    """
+    @allure.step("PW-08: Getting post list")
+    def test_getting_post_list(self, get):
+        Response(get(POST_URL)).assert_status_code(200).validate(SchemaPostPreview)
+
+
+@allure.title("Positive Delete Test Data")
+class TestDelete:
     def test_delete_added_user(self, delete, riding_data):
         url = f"{USER_URL}{riding_data['id']}"
         Response(delete(url)).assert_status_code(200)
