@@ -33,7 +33,7 @@ class UserFull(BuilderBaseClass):
         self.result['gender'] = gender
         return self
 
-    def set_email(self, email='freddy.tester@gmail.com'):
+    def set_email(self, email='freddy.tester@yandex.com'):
         self.result['email'] = email
         return self
 

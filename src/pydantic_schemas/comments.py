@@ -1,16 +1,18 @@
 from pydantic import BaseModel
 
+from src.pydantic_schemas.user import SchemaUserPreview
 
-class CommentCreate(BaseModel):
+
+class SchemaCommentCreate(BaseModel):
     """Comment data to create new item."""
     message: str
     owner: str
     post: str
 
 
-class Comment(BaseModel):
+class SchemaComment(BaseModel):
     id: str
     message: str
-    owner: str
+    owner: SchemaUserPreview
     post: str
     publishDate: str
