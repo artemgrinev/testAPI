@@ -18,8 +18,8 @@ def get():
     return _get
 
 
-def _post(url, data):
-    response = requests.post(url, data=data, headers=API_KEY)
+def _post(url, data, api_key=API_KEY):
+    response = requests.post(url, data=data, headers=api_key)
     return response
 
 
