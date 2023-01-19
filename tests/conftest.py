@@ -58,15 +58,15 @@ def writing_data():
     return _writing_data
 
 
-def _riding_data(file_name="data"):
+def _reading_data(file_name="data"):
     with open(f'tests_data/{file_name}.json') as json_file:
         data = json.load(json_file)
     return data
 
 
 @pytest.fixture
-def riding_data():
-    return _riding_data
+def reading_data():
+    return _reading_data
 
 
 def _add_data(file_name="data", add_data=dict):

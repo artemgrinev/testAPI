@@ -4,7 +4,7 @@ from pytest_check import check
 from configuration import CREATE_USER_URL, CREATE_POST_URL, POST_URL, CREATE_COMMENT_URL
 from src.baseclasses.response import Response
 from src.data.errors_strings import body_not_valid, app_id_missing, app_id_not_exist, params_not_valid
-from src.data.invalid_data import uppercase_body, existing_email, invalid_appi_key, invalid_user_id
+from src.data.invalid_data import uppercase_body, existing_email, invalid_appi_key, invalid_user_id, invalid_post_id
 from src.generators.comments import Comment
 from src.generators.posts import Post
 from src.generators.users import User
@@ -89,8 +89,8 @@ class TestNegativeWayPosts:
         assert response.response_json['error'] == body_not_valid
 
     @allure.title("NW-08: Edit post using non-existent post id")
-    def test_edit_post_no_exist_user(self, put, riding_data):
-        post_id = riding_data(file_name='post')['id']
+    def test_edit_post_no_exist_user(self, put, reading_data):
+        post_id = reading_data(file_name='post')['id']
         url = f"{POST_URL}{post_id}"
         data = self.post_data.set_text("Being dead is not a problem").result
         response = Response(put(url, data=data))
@@ -120,7 +120,7 @@ class TestNegativeWayPosts:
 
 
 @allure.suite("Negative Way Comment")
-class TestNegativeWayPosts:
+class TestNegativeWayComment:
     """
     NW-12: Create comment using existing user id and post id with missing auth token
     NW-13: Create a comment using an existing user id but not an existing post id
@@ -129,20 +129,29 @@ class TestNegativeWayPosts:
     comment = Comment()
 
     @allure.title("NW-12: Create comment using existing user id and post id with missing auth token")
-    def test_create_comment_with_missing_auth_token(self, post):
-        data = self.comment.result
-        print(data)
-        # response = Response(post(CREATE_COMMENT_URL, data=data, api_key=None))
-        # response.assert_status_code(403).validate(SchemaError)
-        # assert response.response_json['error'] == app_id_missing
+    def test_create_comment_with_missing_auth_token(self, post, reading_data):
+        post_id = reading_data(file_name="post")["id"]
+        user_id = reading_data(file_name="post")["owner"]["id"]
+        data = self.comment.set_post(post_id).set_owner(user_id).result
+        response = Response(post(CREATE_COMMENT_URL, data=data, api_key=None))
+        response.assert_status_code(403).validate(SchemaError)
+        assert response.response_json['error'] == app_id_missing
 
     @allure.title("NW-13: Create a comment using an existing user id but not an existing post id")
-    def test_create_comment_with_not_existing_post(self, post):
-        pass
+    def test_create_comment_with_not_existing_post(self, post, reading_data):
+        user_id = reading_data(file_name="post")["owner"]["id"]
+        data = self.comment.set_post(invalid_post_id).set_owner(user_id).result
+        response = Response(post(CREATE_COMMENT_URL, data=data))
+        response.assert_status_code(400).validate(SchemaError)
+        assert response.response_json['error'] == body_not_valid
 
     @allure.title("NW-14: Create a comment using a non-existing user id but an existing post id")
-    def test_create_comment_with_not_existing_user(self, post):
-        pass
+    def test_create_comment_with_not_existing_user(self, post, reading_data):
+        post_id = reading_data(file_name="post")["id"]
+        data = self.comment.set_post(post_id).set_owner(invalid_user_id).result
+        response = Response(post(CREATE_COMMENT_URL, data=data))
+        response.assert_status_code(400).validate(SchemaError)
+        assert response.response_json['error'] == body_not_valid
 
 
 @allure.suite("Negative Way Delete")
