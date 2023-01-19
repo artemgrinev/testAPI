@@ -1,10 +1,11 @@
 import allure
 from pytest_check import check
 
-from configuration import CREATE_USER_URL, CREATE_POST_URL, POST_URL
+from configuration import CREATE_USER_URL, CREATE_POST_URL, POST_URL, CREATE_COMMENT_URL
 from src.baseclasses.response import Response
 from src.data.errors_strings import body_not_valid, app_id_missing, app_id_not_exist, params_not_valid
 from src.data.invalid_data import uppercase_body, existing_email, invalid_appi_key, invalid_user_id
+from src.generators.comments import Comment
 from src.generators.posts import Post
 from src.generators.users import User
 from src.pydantic_schemas.errors import SchemaErrorData, SchemaError
@@ -116,3 +117,61 @@ class TestNegativeWayPosts:
         response = Response(post(CREATE_USER_URL, data=data, api_key=invalid_appi_key))
         response.assert_status_code(403).validate(SchemaError)
         assert response.response_json['error'] == app_id_not_exist
+
+
+@allure.suite("Negative Way Comment")
+class TestNegativeWayPosts:
+    """
+    NW-12: Create comment using existing user id and post id with missing auth token
+    NW-13: Create a comment using an existing user id but not an existing post id
+    NW-14: Create a comment using a non-existing user id but an existing post id
+    """
+    comment = Comment()
+
+    @allure.title("NW-12: Create comment using existing user id and post id with missing auth token")
+    def test_create_comment_with_missing_auth_token(self, post):
+        data = self.comment.result
+        print(data)
+        # response = Response(post(CREATE_COMMENT_URL, data=data, api_key=None))
+        # response.assert_status_code(403).validate(SchemaError)
+        # assert response.response_json['error'] == app_id_missing
+
+    @allure.title("NW-13: Create a comment using an existing user id but not an existing post id")
+    def test_create_comment_with_not_existing_post(self, post):
+        pass
+
+    @allure.title("NW-14: Create a comment using a non-existing user id but an existing post id")
+    def test_create_comment_with_not_existing_user(self, post):
+        pass
+
+
+@allure.suite("Negative Way Delete")
+class TestNegativeWayPosts:
+    """
+    NW-15: Delete non-existent comment
+    NW-16: Delete non-existent post
+    NW-17: Create a comment under the deleted post
+    NW-18: Create post from remote user
+    NW-19: Get a list of posts from a deleted user
+    """
+    comment = Comment()
+
+    @allure.title("NW-15: Delete non-existent comment")
+    def test_delete_not_existing_comment(self, delete):
+        pass
+
+    @allure.title("NW-16: Delete non-existent post")
+    def test_delete_not_existing_post(self, delete):
+        pass
+
+    @allure.title("NW-17: Create a comment under the deleted post")
+    def test_create_comment_under_delete_post(self, post):
+        pass
+
+    @allure.title("NW-18: Create post from remote user")
+    def test_create_post_from_delete_user(self, post):
+        pass
+
+    @allure.title("NW-19: Get a list of posts from a deleted user")
+    def test_get_list_post_from_deleted_user(self, get):
+        pass
