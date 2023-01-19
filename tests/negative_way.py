@@ -1,10 +1,11 @@
 import allure
 from pytest_check import check
 
-from configuration import CREATE_USER_URL
+from configuration import CREATE_USER_URL, CREATE_POST_URL, POST_URL
 from src.baseclasses.response import Response
-from src.data.errors_body import body_not_valid, app_id_missing, app_id_not_exist, params_not_valid
-from src.data.invalid_data import uppercase_body, existing_email, invalid_appi_key
+from src.data.errors_strings import body_not_valid, app_id_missing, app_id_not_exist, params_not_valid
+from src.data.invalid_data import uppercase_body, existing_email, invalid_appi_key, invalid_user_id
+from src.generators.posts import Post
 from src.generators.users import User
 from src.pydantic_schemas.errors import SchemaErrorData, SchemaError
 
@@ -19,49 +20,99 @@ class TestNegativeWayUsers:
     NW-05: Change email for created user
     NW-06: Change the id of the created user
     """
+    user = User()
 
     @allure.title("NW-01: Check case-dependency dody")
     def test_case_dependency_body(self, post):
         body = uppercase_body
-        r = Response(post(CREATE_USER_URL, body))
-        r.assert_status_code(400).validate(SchemaErrorData)
-        assert r.response_json['error'] == body_not_valid
-        assert r.response_json['data']['lastName'] == 'Path `lastName` is required.'
-        assert r.response_json['data']['firstName'] == 'Path `firstName` is required.'
-        assert r.response_json['data']['email'] == 'Path `email` is required.'
+        response = Response(post(CREATE_USER_URL, body))
+        response.assert_status_code(400).validate(SchemaErrorData)
+        assert response.response_json['error'] == body_not_valid
+        assert response.response_json['data']['lastName'] == 'Path `lastName` is required.'
+        assert response.response_json['data']['firstName'] == 'Path `firstName` is required.'
+        assert response.response_json['data']['email'] == 'Path `email` is required.'
 
     @allure.title("NW-02: Creating a user with an existing email")
     def test_create_user_with_exist_email(self, post):
         body = existing_email
-        r = Response(post(CREATE_USER_URL, body))
-        r.assert_status_code(400).validate(SchemaErrorData)
-        assert r.response_json['error'] == body_not_valid
-        assert r.response_json['data']['email'] == 'Email already used'
+        response = Response(post(CREATE_USER_URL, body))
+        response.assert_status_code(400).validate(SchemaErrorData)
+        assert response.response_json['error'] == body_not_valid
+        assert response.response_json['data']['email'] == 'Email already used'
 
     @allure.title("NW-03: Creating a user with a missing authorization token")
     def test_create_user_missing_auth_token(self, post):
-        body = User().result
-        r = Response(post(CREATE_USER_URL, body, api_key=None))
-        r.assert_status_code(403).validate(SchemaError)
-        assert r.response_json['error'] == app_id_missing
+        body = self.user.result
+        response = Response(post(CREATE_USER_URL, body, api_key=None))
+        response.assert_status_code(403).validate(SchemaError)
+        assert response.response_json['error'] == app_id_missing
 
     @allure.title("NW-04: Creating a user with an invalid auth token")
     def test_create_user_invalid_auth_token(self, post):
-        body = User().result
-        r = Response(post(CREATE_USER_URL, body, api_key=invalid_appi_key))
-        r.assert_status_code(403).validate(SchemaError)
-        assert r.response_json['error'] == app_id_not_exist
+        body = self.user.result
+        response = Response(post(CREATE_USER_URL, body, api_key=invalid_appi_key))
+        response.assert_status_code(403).validate(SchemaError)
+        assert response.response_json['error'] == app_id_not_exist
 
     @allure.title("NW-05: Change email for created user")
     def test_update_email(self, put):
         body = {'email': 'freddy.tester123@mail.ru'}
-        r = Response(put(CREATE_USER_URL, body))
-        r.assert_status_code(400).validate(SchemaError)
-        assert r.response_json['error'] == params_not_valid
+        response = Response(put(CREATE_USER_URL, body))
+        response.assert_status_code(400).validate(SchemaError)
+        assert response.response_json['error'] == params_not_valid
 
     @allure.title("NW-06: Change the id of the created user")
     def test_update_id(self, put):
         body = {'id': '8989cvx5x89320vsf'}
-        r = Response(put(CREATE_USER_URL, body))
-        r.assert_status_code(400).validate(SchemaError)
-        assert r.response_json['error'] == params_not_valid
+        response = Response(put(CREATE_USER_URL, body))
+        response.assert_status_code(400).validate(SchemaError)
+        assert response.response_json['error'] == params_not_valid
+
+
+@allure.suite("Negative Way Posts")
+class TestNegativeWayPosts:
+    """
+    NW-07: Create a post using a non-existent user id
+    NW-08: Edit post using non-existent post id
+    NW-09: Create a post without passing the required parameter - user id
+    NW-10: Create post using existing user id with missing auth token
+    NW-11: Create a post using an existing user id with an invalid auth token
+    """
+    post_data = Post()
+
+    @allure.title("NW-07: Create a post using a non-existent user id")
+    def test_create_post_no_exist_user(self, post):
+        data = self.post_data.set_owner(invalid_user_id).result
+        response = Response(post(CREATE_POST_URL, data=data))
+        response.assert_status_code(400).validate(SchemaError)
+        assert response.response_json['error'] == body_not_valid
+
+    @allure.title("NW-08: Edit post using non-existent post id")
+    def test_edit_post_no_exist_user(self, put, riding_data):
+        post_id = riding_data(file_name='post')['id']
+        url = f"{POST_URL}{post_id}"
+        data = self.post_data.set_text("Being dead is not a problem").result
+        response = Response(put(url, data=data))
+        response.assert_status_code(400).validate(SchemaError)
+        assert response.response_json['error'] == body_not_valid
+
+    @allure.title("NW-09: Create a post without passing the required parameter - user id")
+    def test_create_post_not_user_id(self, post):
+        self.post_data.result.pop("owner")
+        response = Response(post(CREATE_POST_URL, data=self.post_data.result))
+        response.assert_status_code(400).validate(SchemaError)
+        assert response.response_json['error'] == body_not_valid
+
+    @allure.title("NW-10: Create post using existing user id with missing auth token")
+    def test_create_post_with_missing_auth_token(self, post):
+        data = self.post_data.result
+        response = Response(post(CREATE_USER_URL, data=data, api_key=None))
+        response.assert_status_code(403).validate(SchemaError)
+        assert response.response_json['error'] == app_id_missing
+
+    @allure.title("NW-11: Create a post using an existing user id with an invalid auth token")
+    def test_create_post_with_invalid_auth_token(self, post):
+        data = self.post_data.result
+        response = Response(post(CREATE_USER_URL, data=data, api_key=invalid_appi_key))
+        response.assert_status_code(403).validate(SchemaError)
+        assert response.response_json['error'] == app_id_not_exist

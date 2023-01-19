@@ -28,8 +28,8 @@ def post():
     return _post
 
 
-def _put(url, data):
-    response = requests.put(url, data=data, headers=API_KEY)
+def _put(url, data, api_key=API_KEY):
+    response = requests.put(url, data=data, headers=api_key)
     return response
 
 
@@ -38,8 +38,8 @@ def put():
     return _put
 
 
-def _delete(url):
-    response = requests.delete(url, headers=API_KEY)
+def _delete(url, api_key=API_KEY):
+    response = requests.delete(url, headers=api_key)
     return response
 
 

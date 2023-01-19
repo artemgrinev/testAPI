@@ -24,7 +24,7 @@ class SchemaUserPreview(BaseModel):
 class SchemaUserFull(BaseModel):
     """Full user data returned by id"""
     id: str
-    title: Title
+    title: Title            # ("mr", "ms", "mrs", "miss", "dr", "")
     firstName: str          # (length: 2 - 50)
     lastName: str           # (length: 2 - 50)
     picture: str            # (url)

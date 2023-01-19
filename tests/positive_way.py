@@ -21,6 +21,7 @@ class TestPositiveWayUsers:
     PW-06: Change user information
     PW-07: Change user information
     """
+    user = User()
 
     @allure.title("PW-01: Getting positive_way list")
     def test_getting_users_list(self, get):
@@ -31,13 +32,13 @@ class TestPositiveWayUsers:
         page = 1
         limit = 20
         url = f'{USER_URL}?page={page}&limit={limit}'
-        res = Response(get(url))
-        res.assert_status_code(200).validate(SchemaUserPreview)
-        assert res.response_json['limit'] == limit
+        response = Response(get(url))
+        response.assert_status_code(200).validate(SchemaUserPreview)
+        assert response.response_json['limit'] == limit
 
     @allure.title("PW-03: Create new user")
     def test_creating_new_user(self, post, writing_data):
-        response = Response(post(CREATE_USER_URL, User().result))
+        response = Response(post(CREATE_USER_URL, self.user_data.result))
         writing_data(file_name="user", data=response.response_json)
         response.assert_status_code(200).validate(SchemaUser)
 
@@ -51,22 +52,22 @@ class TestPositiveWayUsers:
     @allure.title("PW-05: Update created user")
     def test_update_user(self, put, riding_data, writing_data):
         user_id = riding_data(file_name="user")['id']
-        new_user_data = User().set_first_name("Freddy1").set_last_name("Tester1").result
+        data = self.user_data.set_first_name("Freddy1").set_last_name("Tester1").result
         url = f"{USER_URL}{user_id}"
-        res = Response(put(url, new_user_data))
-        res.assert_status_code(200).validate(SchemaUser)
-        assert res.response_json['id'] == user_id
-        assert res.response_json != riding_data(file_name="user")
-        writing_data(file_name="user", data=res.response_json)
+        response = Response(put(url, data=data))
+        response.assert_status_code(200).validate(SchemaUser)
+        assert response.response_json['id'] == user_id
+        assert response.response_json != riding_data(file_name="user")
+        writing_data(file_name="user", data=response.response_json)
 
     @allure.title("PW-06: Full update created user")
     def test_full_update_user(self, put, riding_data, writing_data):
-        full_user_date = UserFull().result
+        data = self.user_data.result
         user_id = riding_data(file_name="user")['id']
         url = f"{USER_URL}{user_id}"
-        res = Response(put(url, full_user_date))
-        writing_data(file_name="user", data=res.response_json)
-        res.assert_status_code(200).validate(SchemaUserFull)
+        response = Response(put(url, data=data))
+        writing_data(file_name="user", data=response.response_json)
+        response.assert_status_code(200).validate(SchemaUserFull)
 
     @allure.title("PW-07: Change user information")
     def test_getting_full_user_data(self, get, riding_data):
@@ -94,6 +95,8 @@ class TestPositiveWayPosts:
     PW-12: Get a list of created posts by User id
     PW-13: Edit the information of a created post
     """
+    post_data = Post()
+
     @allure.title("PW-08: Getting post list")
     def test_getting_post_list(self, get):
         Response(get(POST_URL)).assert_status_code(200).validate(SchemaPostPreview)
@@ -103,14 +106,14 @@ class TestPositiveWayPosts:
         page = 1
         limit = 20
         url = f'{POST_URL}?page={page}&limit={limit}'
-        res = Response(get(url))
-        res.assert_status_code(200).validate(SchemaPostPreview)
-        assert res.response_json['limit'] == limit
+        response = Response(get(url))
+        response.assert_status_code(200).validate(SchemaPostPreview)
+        assert response.response_json['limit'] == limit
 
     @allure.title("PW-10: Create new post")
     def test_create_post(self, post, writing_data, riding_data):
         owner = riding_data(file_name="user")['id']
-        body = Post().set_owner(owner).result
+        body = self.post_data.set_owner(owner).result
         response = Response(post(CREATE_POST_URL, body))
         response.assert_status_code(200).validate(SchemaPost)
         writing_data(file_name="post", data=response.response_json)
@@ -135,14 +138,14 @@ class TestPositiveWayPosts:
 
     @allure.title("PW-13: Edit the information of a created post")
     def test_update_post(self, put, riding_data, writing_data):
-        new_post_data = Post().set_text("Being dead is not a problem.").\
+        new_post_data = self.post_data.set_text("Being dead is not a problem.").\
                                set_tags(["philosophy"]).set_likes(150).result
         url = f"{POST_URL}{riding_data(file_name='post')['id']}"
-        res = Response(put(url, data=new_post_data))
-        res.assert_status_code(200).validate(SchemaPost)
-        assert res.response_json['id'] == riding_data(file_name='post')['id']
-        assert res.response_json != riding_data(file_name='post')
-        writing_data(file_name="post", data=res.response_json)
+        response = Response(put(url, data=new_post_data))
+        response.assert_status_code(200).validate(SchemaPost)
+        assert response.response_json['id'] == riding_data(file_name='post')['id']
+        assert response.response_json != riding_data(file_name='post')
+        writing_data(file_name="post", data=response.response_json)
 
 
 @allure.suite("Positive Way Comments")
@@ -155,6 +158,7 @@ class TestPositiveWayComment:
     PW-18: Leave a comment under the post of other positive_way
     PW-19: Get a list of created comments by User id
     """
+    comment = Comment()
 
     @allure.title("PW-14: Getting comments list")
     def test_getting_comment_list(self, get):
@@ -165,15 +169,15 @@ class TestPositiveWayComment:
         page = 1
         limit = 20
         url = f'{COMMENT_URL}?page={page}&limit={limit}'
-        res = Response(get(url))
-        res.assert_status_code(200).validate(SchemaComment)
-        assert res.response_json['limit'] == limit
+        response = Response(get(url))
+        response.assert_status_code(200).validate(SchemaComment)
+        assert response.response_json['limit'] == limit
 
     @allure.title("PW-16: Create a new comment under the created post")
     def test_create_comment(self, post, writing_data, riding_data):
         owner = riding_data(file_name="user")["id"]
         post_id = riding_data(file_name="post")["id"]
-        body = Comment().set_owner(owner).set_post(post_id).result
+        body = self.comment.set_owner(owner).set_post(post_id).result
         response = Response(post(CREATE_COMMENT_URL, body))
         response.assert_status_code(200).validate(SchemaComment)
         writing_data(file_name="comment", data=response.response_json)
@@ -193,7 +197,7 @@ class TestPositiveWayComment:
     def test_create_comment_other_user(self, get, post, add_data, riding_data):
         owner = riding_data(file_name="user")["id"]
         post_id = Response(get(POST_URL)).response_json["data"][0]["id"]
-        body = Comment().set_owner(owner).set_post(post_id).result
+        body = self.comment.set_owner(owner).set_post(post_id).result
         response = Response(post(CREATE_COMMENT_URL, body))
         response.assert_status_code(200).validate(SchemaComment)
         add_data(file_name="comment", add_data=response.response_json)
@@ -246,9 +250,9 @@ class TestDeleteData:
     def test_verify_delete_post(self, get, riding_data):
         post_id = riding_data(file_name="post")["id"]
         url = f"{USER_URL}{post_id}"
-        res = Response(get(url))
-        res.assert_status_code(404)
-        assert res.response_json == {'error': 'RESOURCE_NOT_FOUND'}
+        response = Response(get(url))
+        response.assert_status_code(404)
+        assert response.response_json == {'error': 'RESOURCE_NOT_FOUND'}
 
     @allure.title("PW-24: Delete created user")
     def test_delete_added_user(self, delete, riding_data):
@@ -260,6 +264,6 @@ class TestDeleteData:
     def test_verify_delete_user(self, get, riding_data):
         user_id = riding_data(file_name="user")["id"]
         url = f"{USER_URL}{user_id}"
-        res = Response(get(url))
-        res.assert_status_code(404)
-        assert res.response_json == {'error': 'RESOURCE_NOT_FOUND'}
+        response = Response(get(url))
+        response.assert_status_code(404)
+        assert response.response_json == {'error': 'RESOURCE_NOT_FOUND'}
