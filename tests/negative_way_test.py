@@ -1,10 +1,12 @@
 import allure
 from pytest_check import check
 
-from configuration import CREATE_USER_URL, CREATE_POST_URL, POST_URL, CREATE_COMMENT_URL
+from configuration import CREATE_USER_URL, CREATE_POST_URL, POST_URL, CREATE_COMMENT_URL, USER_URL, COMMENT_URL
 from src.baseclasses.response import Response
-from src.data.errors_strings import body_not_valid, app_id_missing, app_id_not_exist, params_not_valid
-from src.data.invalid_data import uppercase_body, existing_email, invalid_appi_key, invalid_user_id, invalid_post_id
+from src.data.errors_message import body_not_valid, app_id_missing, app_id_not_exist, params_not_valid, \
+    resource_not_found
+from src.data.invalid_data import uppercase_body, existing_email, invalid_appi_key, invalid_user_id, invalid_post_id, \
+    invalid_comment_id
 from src.generators.comments import Comment
 from src.generators.posts import Post
 from src.generators.users import User
@@ -155,7 +157,7 @@ class TestNegativeWayComment:
 
 
 @allure.suite("Negative Way Delete")
-class TestNegativeWayPosts:
+class TestNegativeWayDelete:
     """
     NW-15: Delete non-existent comment
     NW-16: Delete non-existent post
@@ -167,15 +169,30 @@ class TestNegativeWayPosts:
 
     @allure.title("NW-15: Delete non-existent comment")
     def test_delete_not_existing_comment(self, delete):
-        pass
+        comment_id = invalid_comment_id
+        url = f"{COMMENT_URL}{comment_id}"
+        response = Response(delete(url))
+        response.assert_status_code(404).validate(SchemaError)
+        assert response.response_json["error"] == resource_not_found
 
     @allure.title("NW-16: Delete non-existent post")
     def test_delete_not_existing_post(self, delete):
-        pass
+        post_id = invalid_post_id
+        url = f"{POST_URL}{post_id}"
+        response = Response(delete(url))
+        response.assert_status_code(404).validate(SchemaError)
+        assert response.response_json["error"] == resource_not_found
 
     @allure.title("NW-17: Create a comment under the deleted post")
-    def test_create_comment_under_delete_post(self, post):
-        pass
+    def test_create_comment_under_delete_post(self, post, delete, reading_data):
+        post_id = reading_data(file_name="post")["id"]
+        user_id = reading_data(file_name="post")["owner"]["id"]
+        url = f"{POST_URL}{post_id}"
+        Response(delete(url)).assert_status_code(200)
+        data = self.comment.set_post(post_id).set_owner(user_id).result
+        response = Response(post(CREATE_COMMENT_URL, data=data))
+        response.assert_status_code(404).validate(SchemaError)
+        assert response.response_json['error'] == resource_not_found
 
     @allure.title("NW-18: Create post from remote user")
     def test_create_post_from_delete_user(self, post):

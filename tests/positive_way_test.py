@@ -38,7 +38,7 @@ class TestPositiveWayUsers:
 
     @allure.title("PW-03: Create new user")
     def test_creating_new_user(self, post, writing_data):
-        response = Response(post(CREATE_USER_URL, self.user_data.result))
+        response = Response(post(CREATE_USER_URL, self.user.result))
         writing_data(file_name="user", data=response.response_json)
         response.assert_status_code(200).validate(SchemaUser)
 

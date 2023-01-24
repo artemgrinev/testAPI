@@ -33,12 +33,12 @@ class UserFull(BuilderBaseClass):
         self.result['gender'] = gender
         return self
 
-    def set_email(self, email='freddy.tester@yandex.com'):
+    def set_email(self, email='tester.freddy@gmail.com'):
         self.result['email'] = email
         return self
 
     def set_date_of_birth(self, year=1968, month=9, day=1):
-        self.result['dateOfBirth'] = datetime(year, month, day).isoformat()
+        self.result['dateOfBirth'] = f'{datetime(year, month, day).isoformat()}.000Z'
         return self
 
     def set_phone(self, phone='+99-354-85-98'):
@@ -68,6 +68,7 @@ class UserFull(BuilderBaseClass):
         self.set_first_name()
         self.set_last_name()
         self.set_gender()
+        self.set_email()
         self.set_date_of_birth()
         self.set_phone()
         self.set_avatar()
