@@ -2,52 +2,60 @@ import pytest
 import requests
 import configuration as conf
 import src.generators as generate
-from src.baseclasses.response import Response
+import src.pydantic_schemas as schema
+from src.baseclasses.response import Response as res
+import src.baseclasses.equivalent as eq
 
 
-@pytest.fixture()
-def create_user():
+@pytest.fixture(scope='class')
+def create_user_cls_scope():
+    """Creates a user, returns its id, and deletes it when it's done"""
     data = generate.User().result
-    response = requests.post(conf.CREATE_USER_URL, data=data, headers=conf.API_KEY)
-    user_id = response.json()['id']
-    yield user_id
-    url = f"{conf.USER_URL}{user_id}"
+    response = res(requests.post(conf.CREATE_USER_URL, data=data, headers=conf.API_KEY))
+    response.assert_status_code(200).validate(schema.User)
+    user_json = response.json_data
+    yield user_json
+    url = f"{conf.USER_URL}{user_json['id']}"
     requests.delete(url, headers=conf.API_KEY)
-    print(f"delete: {user_id}")
+    print(f"delete: {user_json['id']}")
+
+
+@pytest.fixture(scope='function')
+def create_user_func_scope():
+    """Creates a user, returns its id, and deletes it when it's done"""
+    data = generate.User().result
+    response = res(requests.post(conf.CREATE_USER_URL, data=data, headers=conf.API_KEY))
+    response.assert_status_code(200).validate(schema.User)
+    user_json = response.json_data
+    yield user_json
+    url = f"{conf.USER_URL}{user_json['id']}"
+    requests.delete(url, headers=conf.API_KEY)
+    print(f"delete: {user_json['id']}")
 
 
 def test_fixture_create():
     print(conf.CREATE_USER_URL)
 
 
-@pytest.mark.usefixtures('create_user')
+@pytest.mark.usefixtures('create_user_cls_scope')
 class TestFixture:
 
-    def test_2(self, create_user):
-        print(create_user)
+    def test_1(self, create_user_cls_scope):
+        print('test1', create_user_cls_scope)
 
-    def test_3(self, create_user):
-        print(create_user)
-
-
-user_date = (generate.UserFull().set_last_name('Nastia').set_gender('female').result,
-             generate.UserFull().set_last_name('Misha').set_gender('male').result,
-             generate.UserFull().set_last_name('Lesha').set_gender('male').result)
+    def test_2(self, create_user_cls_scope):
+        print('test2', create_user_cls_scope)
 
 
-def equivalent(d1, d2):
-    return ((d1['title'] == d2['title']) and
-            (d1['firstName'] == d2['firstName']) and
-            (d1['lastName'] == d2['lastName']) and
-            (d1['picture'] == d2['picture']) and
-            (d1['gender'] == d2['gender']) and
-            (d1['email'] == d2['email']) and
-            (d1['dateOfBirth'] == d2['dateOfBirth']))
+user_data = (generate.UserFull().set_last_name('Nastia').set_gender('female').result,
+             generate.UserFull().set_first_name('Potapova').set_tittle('ms').result,
+             generate.UserFull().set_date_of_birth(year=2003, month=3, day=31).set_phone('+79312845578').result)
 
 
-@pytest.mark.parametrize('user', user_date)
-def test_parameter(user, create_user):
-    url = f"{conf.USER_URL}{create_user}"
-    res = Response(requests.put(url, data=user, headers=conf.API_KEY))
-    res.assert_status_code(200)
-    assert equivalent(res.response_json, user)
+@pytest.mark.parametrize('user', user_data)
+def test_parameter(user, create_user_func_scope):
+    url = f"{conf.USER_URL}{create_user_func_scope['id']}"
+    response = res(requests.put(url, data=user, headers=conf.API_KEY))
+    response.assert_status_code(200).validate(schema.User)
+    assert eq.equivalent('user', [user, response.json_data])
+

@@ -1,9 +1,9 @@
 from pydantic import BaseModel
 
-from src.pydantic_schemas.user import SchemaUserPreview
+from src.pydantic_schemas.user import UserPreview
 
 
-class SchemaPostCreate(BaseModel):
+class PostCreate(BaseModel):
     """Post data for create request"""
     text: str
     image: str
@@ -12,7 +12,7 @@ class SchemaPostCreate(BaseModel):
     owner: str
 
 
-class SchemaPostPreview(BaseModel):
+class PostPreview(BaseModel):
     """Post data as a part of list"""
     id: str
     image: str
@@ -20,10 +20,10 @@ class SchemaPostPreview(BaseModel):
     tags: list
     text: str
     publishDate: str
-    owner: SchemaUserPreview
+    owner: UserPreview
 
 
-class SchemaPost(BaseModel):
+class Post(BaseModel):
     """Post data returned by id"""
     id: str
     image: str
@@ -33,4 +33,4 @@ class SchemaPost(BaseModel):
     text: str
     publishDate: str
     updatedDate: str
-    owner: SchemaUserPreview
+    owner: UserPreview

@@ -3,7 +3,7 @@ from src.enum.users_enum import Title
 from src.pydantic_schemas.location import Locations
 
 
-class SchemaUser(BaseModel):
+class User(BaseModel):
     id: str
     firstName: str
     lastName: str
@@ -12,7 +12,7 @@ class SchemaUser(BaseModel):
     updatedDate: str
 
 
-class SchemaUserPreview(BaseModel):
+class UserPreview(BaseModel):
     """User as a part of list or other data like post/comment"""
     id: str
     title: Title    # ("mr", "ms", "mrs", "miss", "dr", "")
@@ -21,7 +21,7 @@ class SchemaUserPreview(BaseModel):
     picture: str
 
 
-class SchemaUserFull(BaseModel):
+class UserFull(BaseModel):
     """Full user data returned by id"""
     id: str
     title: Title            # ("mr", "ms", "mrs", "miss", "dr", "")

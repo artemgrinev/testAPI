@@ -1,51 +1,36 @@
 import pytest
 import requests
 import json
-
-from configuration import API_KEY
-
-
-def _get(url: str, data=None):
-    if data is not None:
-        response = requests.get(url, data=data, headers=API_KEY)
-    else:
-        response = requests.get(url, headers=API_KEY)
-    return response
+import configuration as conf
+import src.generators as generate
+import src.pydantic_schemas as schema
+from src.baseclasses.response import Response as res
 
 
-@pytest.fixture
-def get():
-    return _get
+@pytest.fixture(scope='class')
+def create_user_cls_scope():
+    """Creates a user, returns its id, and deletes it when it's done"""
+    data = generate.User().result
+    response = res(requests.post(conf.CREATE_USER_URL, data=data, headers=conf.API_KEY))
+    response.assert_status_code(200).validate(schema.User)
+    user_json = response.json_data
+    yield user_json
+    url = f"{conf.USER_URL}{user_json['id']}"
+    requests.delete(url, headers=conf.API_KEY)
+    print(f"delete: {user_json['id']}")
 
 
-def _post(url, data, api_key=API_KEY):
-    response = requests.post(url, data=data, headers=api_key)
-    return response
-
-
-@pytest.fixture
-def post():
-    return _post
-
-
-def _put(url, data, api_key=API_KEY):
-    response = requests.put(url, data=data, headers=api_key)
-    return response
-
-
-@pytest.fixture
-def put():
-    return _put
-
-
-def _delete(url, api_key=API_KEY):
-    response = requests.delete(url, headers=api_key)
-    return response
-
-
-@pytest.fixture
-def delete():
-    return _delete
+@pytest.fixture(scope='function')
+def create_user_func_scope():
+    """Creates a user, returns its id, and deletes it when it's done"""
+    data = generate.User().result
+    response = res(requests.post(conf.CREATE_USER_URL, data=data, headers=conf.API_KEY))
+    response.assert_status_code(200).validate(schema.User)
+    user_json = response.json_data
+    yield user_json
+    url = f"{conf.USER_URL}{user_json['id']}"
+    requests.delete(url, headers=conf.API_KEY)
+    print(f"delete: {user_json['id']}")
 
 
 def _writing_data(file_name="data", data=dict):
